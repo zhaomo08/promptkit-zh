@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
-const client = new Anthropic()
+const client = new OpenAI({
+  apiKey: process.env.LLM_API_KEY,
+  baseURL: process.env.LLM_BASE_URL,
+})
+
+const MODEL = process.env.LLM_MODEL || 'gpt-4o-mini'
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
@@ -15,8 +20,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '场景描述不能超过200字' }, { status: 400 })
   }
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+  const completion = await client.chat.completions.create({
+    model: MODEL,
     max_tokens: 1024,
     messages: [
       {
@@ -39,10 +44,10 @@ export async function POST(request: NextRequest) {
     ],
   })
 
-  const content = message.content[0]
-  if (content.type !== 'text') {
+  const text = completion.choices[0]?.message?.content
+  if (!text) {
     return NextResponse.json({ error: '生成失败，请重试' }, { status: 500 })
   }
 
-  return NextResponse.json({ result: content.text })
+  return NextResponse.json({ result: text })
 }
