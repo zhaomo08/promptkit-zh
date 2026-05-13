@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-const client = new OpenAI({
-  apiKey: process.env.LLM_API_KEY,
-  baseURL: process.env.LLM_BASE_URL,
-})
-
-const MODEL = process.env.LLM_MODEL || 'gpt-4o-mini'
-
 export async function POST(request: NextRequest) {
+  const client = new OpenAI({
+    apiKey: process.env.LLM_API_KEY,
+    baseURL: process.env.LLM_BASE_URL,
+  })
+  const MODEL = process.env.LLM_MODEL || 'gpt-4o-mini'
   const body = await request.json().catch(() => ({}))
   const { scenario } = body
 
